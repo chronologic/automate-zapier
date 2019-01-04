@@ -45,7 +45,7 @@ const Transaction = {
         key: "Transaction",
         required: true,
         type: "string",
-        helpText: "Signed Ethereum transaction. Automate expects correctly signed Ethereum transaction, please use one of the available Ethereum wallets for e.g https://www.myetherwallet.com/#offline-transaction "
+        helpText: "Signed Ethereum transaction. Automate expects correctly signed Ethereum transaction, please use one of the available Ethereum wallets for e.g `https://www.myetherwallet.com/#offline-transaction`"
       }
     ],
     perform: executeTransaction,
