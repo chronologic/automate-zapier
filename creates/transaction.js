@@ -1,35 +1,65 @@
 const ethers = require("ethers");
 
-const MINED = "Mined";
-const WAITING = "Waiting for nonce";
-const NONCE_SPENT = "Nonce already spent";
+const STATE = {
+  MINED: "MINED",
+  NONCE_TOO_HIGH: "NONCE_TOO_HIGH",
+  TEST: "TEST"
+};
+
+const validateTransaction = tx => {
+  let parsed;
+  try {
+    parsed = ethers.utils.parseTransaction(tx);
+  } catch(err) {
+    throw new Error("Not compatible Ethereum transaction");
+  }
+  
+  if (!parsed.from) {
+    throw new Error("Transaction not signed");
+  }
+  try {
+    ethers.utils.getNetwork(parsed.chainId)
+  } catch(err) {
+    throw new Error("Unsupported network id = " + parsed.chainId)
+  }
+
+  return parsed;
+};
+
+const humanize = result => {
+  for(const key in result) {
+    if (result[key] instanceof ethers.utils.BigNumber) {
+      result[key] = result[key].toString();
+    }
+  }
+}
 
 const executeTransaction = async (z, bundle) => {
   z.console.log("Inputs", bundle.inputData);
 
   const signedTransaction = bundle.inputData.Transaction;
-  const parsed = ethers.utils.parseTransaction(signedTransaction);
+  const parsed = validateTransaction(signedTransaction);
   const network = ethers.utils.getNetwork(parsed.chainId);
   const provider = ethers.getDefaultProvider(network);
 
-  const currentNonce = await provider.getTransactionCount(parsed.from);
-  const transactionNonce = parsed.nonce;
+  const senderNonce = await provider.getTransactionCount(parsed.from);
 
-  let state = MINED;
+  let state = STATE.MINED;
   let result = parsed;
 
-  if (transactionNonce < currentNonce) {
-    state = NONCE_SPENT;
-  } else if (transactionNonce > currentNonce) {
-    state = WAITING;
-  } else {
+  if (bundle.meta.frontend) {
+    state = STATE.TEST;
+  } else if (parsed.nonce > senderNonce) {
+    state = STATE.NONCE_TOO_HIGH;
+  } else if (parsed.nonce === senderNonce) {
     const response = await provider.sendTransaction(signedTransaction);
 
     result = await response.wait(3);
-    state = MINED;
   }
 
-  return { ...result, state };
+  humanize(result);
+
+  return { ...result, state, senderNonce };
 };
 
 const Transaction = {
@@ -37,7 +67,8 @@ const Transaction = {
   noun: "Transaction",
   display: {
     label: "Execute Ethereum Transaction",
-    description: "Executes your signed Ethereum transaction using one of the public nodes."
+    description:
+      "Executes your signed Ethereum transaction using one of the public nodes."
   },
   operation: {
     inputFields: [
@@ -45,7 +76,8 @@ const Transaction = {
         key: "Transaction",
         required: true,
         type: "string",
-        helpText: "Signed Ethereum transaction. Automate expects correctly signed Ethereum transaction, please use one of the available Ethereum wallets for e.g `https://www.myetherwallet.com/#offline-transaction`"
+        helpText:
+          "Signed Ethereum transaction. Automate expects correctly signed Ethereum transaction, please use one of the available Ethereum wallets for e.g `https://www.myetherwallet.com/#offline-transaction`"
       }
     ],
     perform: executeTransaction,
@@ -62,7 +94,7 @@ const Transaction = {
       value: "1000000000000000000",
       chainId: 1,
       status: 1,
-      state: MINED
+      state: STATE.MINED
     },
     outputFields: [
       { key: "state", label: "Execution state" },
