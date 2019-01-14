@@ -115,7 +115,7 @@ const Transaction = {
         required: true,
         type: "string",
         helpText:
-          "Signed Ethereum transaction. Automate expects correctly signed Ethereum transaction, please use one of the available Ethereum wallets for e.g `https://www.myetherwallet.com/#offline-transaction`"
+          "Signed Ethereum transaction. Automate expects correctly signed Ethereum transaction, please read our tutorial on how to do that `https://blog.chronologic.network/automate-meets-zapier-acd09d31c166`"
       }
     ],
     perform: executeTransaction,
