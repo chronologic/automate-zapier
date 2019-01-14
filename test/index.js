@@ -4,6 +4,7 @@ const zapier = require("zapier-platform-core");
 // Use this to make test calls into your app:
 const App = require("../index");
 const appTester = zapier.createAppTester(App);
+const { ErrorMessage } = require("../creates/transaction");
 
 describe("My App", () => {
   it("should throw when not compatible transaction", async () => {
@@ -15,7 +16,7 @@ describe("My App", () => {
 
     await assert.rejects(
       appTester(App.creates.transaction.operation.perform, bundle),
-      Error.NOT_COMPATIBLE
+      ErrorMessage.NOT_COMPATIBLE
     );
   });
   it("should humanize the results", async () => {

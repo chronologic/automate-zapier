@@ -6,7 +6,7 @@ const STATE = {
   TEST: "TEST"
 };
 
-const Error = {
+const ErrorMessage = {
   NOT_COMPATIBLE: "This transaction seems to be not compatible with Ethereum transaction, please make sure you signed and copied it correctly so it looks like 0xf86c588509502f...",
   RAW: "This transaction looks like RAW unsigned transaction, please make sure you signed and copied it correctly so it looks like 0xf86c588509502f...",
   UNSIGNED: "The transaction format looks good but it seems to be unsigned, please make sure you signed and copied it correctly so it looks like 0xf86c588509502f...",
@@ -47,18 +47,18 @@ const validateTransaction = tx => {
   } catch (err) {
     const raw = JSON.parse(tx);
     if (raw.nonce) {
-      throw new Error(Error.RAW);
+      throw new Error(ErrorMessage.RAW);
     }
-    throw new Error(Error.NOT_COMPATIBLE);
+    throw new Error(ErrorMessage.NOT_COMPATIBLE);
   }
 
   if (!parsed.from) {
-    throw new Error(Error.UNSIGNED);
+    throw new Error(ErrorMessage.UNSIGNED);
   }
   try {
     ethers.utils.getNetwork(parsed.chainId);
   } catch (err) {
-    throw new Error(Error.NOT_SUPPORTED);
+    throw new Error(ErrorMessage.NOT_SUPPORTED);
   }
 
   return parsed;
@@ -157,4 +157,4 @@ const Transaction = {
   }
 };
 
-module.exports = Transaction;
+module.exports = { Transaction, ErrorMessage };

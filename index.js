@@ -1,4 +1,4 @@
-const transaction = require('./creates/transaction');
+const transaction = require('./creates/transaction').Transaction;
 // We can roll up all our behaviors in an App.
 const App = {
   // This is just shorthand to reference the installed dependencies you have. Zapier will
