@@ -1,5 +1,6 @@
 const ethers = require("ethers");
 const utils = require("ethers/utils");
+const ERC20 = require("./erc20");
 
 const STATE = {
   MINED: "MINED",
@@ -76,6 +77,36 @@ const humanize = result => {
   }
 };
 
+const tryDecodeTokenTransfer = async (parsed) => {
+  let res = {};
+
+  try {
+    const token = new ethers.Contract(
+      parsed.to,
+      ERC20,
+      ethers.getDefaultProvider(ethers.utils.getNetwork(parsed.chainId))
+    );
+
+    const name = await token.name();
+    const decimals = await token.decimals();
+    
+    const callDataParameters = '0x' + parsed.data.substring(10);
+    const params = ethers.utils.defaultAbiCoder.decode(
+      ['address', 'uint256'],
+      callDataParameters
+    );
+
+    res = {
+      tokenName: name,
+      tokenRecipient: params[0],
+      tokenAmount: params[1],
+      tokenHumanReadableAmount: utils.formatUnits(params[1], decimals) 
+    }
+  } catch (e) {}
+
+  return res;
+}
+
 const executeTransaction = async (z, bundle) => {
   z.console.log("Inputs", bundle.inputData);
 
@@ -85,9 +116,10 @@ const executeTransaction = async (z, bundle) => {
   const provider = ethers.getDefaultProvider(network);
 
   const senderNonce = await provider.getTransactionCount(parsed.from);
+  const tokenInfo = await tryDecodeTokenTransfer(parsed);
 
   let state = STATE.MINED;
-  let result = { ...proto, ...parsed };
+  let result = { ...proto, ...parsed, ...tokenInfo };
 
   if (bundle.meta.frontend) {
     state = STATE.TEST;
