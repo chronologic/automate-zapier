@@ -1,4 +1,5 @@
 const ethers = require("ethers");
+const utils = require("ethers/utils");
 
 const STATE = {
   MINED: "MINED",
@@ -22,6 +23,7 @@ const proto = {
   gasPrice: "",
   data: "",
   value: "",
+  humanReadableValue: "",
   chainId: 1,
   status: 1,
   contractAddress: "",
@@ -65,6 +67,8 @@ const validateTransaction = tx => {
 };
 
 const humanize = result => {
+  result.humanReadableValue = utils.formatEther(result.value);
+  
   for (const key in result) {
     if (result[key] instanceof ethers.utils.BigNumber) {
       result[key] = result[key].toString();
@@ -129,6 +133,7 @@ const Transaction = {
       gasPrice: "1000000000",
       data: "",
       value: "1000000000000000000",
+      humanReadableValue:  "1",
       chainId: 1,
       status: 1,
       contractAddress: "0x1234",

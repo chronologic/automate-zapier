@@ -36,6 +36,7 @@ describe("My App", () => {
     assert.equal(result.gasLimit, 21000);
     assert.equal(result.gasPrice, 40000000000);
     assert.equal(result.value, 10000000000000000);
+    assert.equal(result.humanReadableValue, 0.01);
   });
 
   it("should trim transaction", async () => {
