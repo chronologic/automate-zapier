@@ -14,10 +14,30 @@ describe("My App", () => {
       }
     };
 
-    await assert.rejects(
-      appTester(App.creates.transaction.operation.perform, bundle),
-      ErrorMessage.NOT_COMPATIBLE
-    );
+    try {
+      await appTester(App.creates.transaction.operation.perform, bundle);
+    } catch (err) {
+      assert.equal(err.message.startsWith(ErrorMessage.NOT_COMPATIBLE), true);
+      return;
+    }
+
+    assert.fail();
+  });
+  it("should throw raw transaction error when unsigned MetaMask tx has been entered", async () => {
+    const bundle = {
+      inputData: {
+        Transaction: '{"nonce":"0x00","gasPrice":"0x09502f9000","gasLimit":"0x5208","to":"0xFAd1c1406BFee6E3A3D2E7c0258c804407B501Fc","value":"0x0de0b6b3a7640000","data":"0x","chainId":42}'
+      }
+    };
+
+    try {
+      await appTester(App.creates.transaction.operation.perform, bundle);
+    } catch (err) {
+      assert.equal(err.message.startsWith(ErrorMessage.RAW), true);
+      return;
+    }
+
+    assert.fail();
   });
   it("should humanize the results", async () => {
     const bundle = {
@@ -62,8 +82,11 @@ describe("My App", () => {
     assert.equal(result.value, 0);
     assert.equal(result.humanReadableValue, 0);
     assert.equal(result.tokenName, "DAY");
-    assert.equal(result.tokenAmount, 10*(10**18));
-    assert.equal(result.tokenRecipient, "0xFAd1c1406BFee6E3A3D2E7c0258c804407B501Fc");
+    assert.equal(result.tokenAmount, 10 * 10 ** 18);
+    assert.equal(
+      result.tokenRecipient,
+      "0xFAd1c1406BFee6E3A3D2E7c0258c804407B501Fc"
+    );
   }).timeout(5000);
 
   it("should trim transaction", async () => {

@@ -48,11 +48,15 @@ const validateTransaction = tx => {
     tx = tx.trim();
     parsed = ethers.utils.parseTransaction(tx);
   } catch (err) {
-    const raw = JSON.parse(tx);
+    let raw;
+    try {
+      raw = JSON.parse(tx);
+    } catch(e) {
+      throw new Error(ErrorMessage.NOT_COMPATIBLE);
+    }
     if (raw.nonce) {
       throw new Error(ErrorMessage.RAW);
     }
-    throw new Error(ErrorMessage.NOT_COMPATIBLE);
   }
 
   if (!parsed.from) {
