@@ -1,6 +1,12 @@
 const ethers = require("ethers");
 const utils = require("ethers/utils");
 const ERC20 = require("./erc20");
+const KeenTracking = require('keen-tracking');
+
+const keenClient = new KeenTracking({
+  projectId: '5c656583c9e77c000121bc36',
+  writeKey: 'CC8B6ACCBF5F7205E90631F5233910F66BA6AD342B524DD90EAD72863B0167B7D261B62C2C553DBDAB5FF5C102CF5E32EA9D902C5A94B1E0F891DF21DBEC5D64C6B376FB3D6CF938B6EC9F66646FE2404B399EC51D1707610AE6C5F29CCA3B5D'
+});
 
 const STATE = {
   MINED: "MINED",
@@ -123,7 +129,7 @@ const executeTransaction = async (z, bundle) => {
   const tokenInfo = await tryDecodeTokenTransfer(parsed);
 
   let state = STATE.MINED;
-  let result = { ...proto, ...parsed, ...tokenInfo };
+  let executionResult = { ...proto, ...parsed, ...tokenInfo };
 
   if (bundle.meta.frontend) {
     state = STATE.TEST;
@@ -132,12 +138,16 @@ const executeTransaction = async (z, bundle) => {
   } else if (parsed.nonce === senderNonce) {
     const response = await provider.sendTransaction(signedTransaction);
 
-    result = await response.wait(3);
+    executionResult = await response.wait(3);
   }
 
-  humanize(result);
+  humanize(executionResult);
 
-  return { ...result, state, senderNonce };
+  const result =  { ...executionResult, state, senderNonce };
+
+  keenClient.recordEvent("execution", result);
+
+  return result;
 };
 
 const Transaction = {

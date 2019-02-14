@@ -15,8 +15,9 @@
     "npm": ">=5.6.0"
   },
   "dependencies": {
-    "ethers": "^4.0.20",
-    "zapier-platform-core": "7.6.0"
+    "ethers": "^4.0.25",
+    "keen-tracking": "^4.1.0",
+    "zapier-platform-core": "^7.6.1"
   },
   "devDependencies": {
     "mocha": "^5.2.0",
